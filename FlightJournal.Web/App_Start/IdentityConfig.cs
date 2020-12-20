@@ -188,15 +188,19 @@ namespace FlightJournal.Web.Models
                 && !string.IsNullOrWhiteSpace(settings.TwilioAuthToken)
                 && !string.IsNullOrWhiteSpace(settings.TwilioFromNumber))
             {
-
+                // based of https://www.twilio.com/docs/sms/quickstart/csharp-dotnet-framework?code-sample=code-send-an-sms-using-twilio-with-c&code-language=C%23&code-sdk-version=5.x
                 // Find your Account Sid and Auth Token at twilio.com/user/account 
-                var twilio = new TwilioRestClient(settings.TwilioAccountSid, settings.TwilioAuthToken);
+                TwilioClient.Init(settings.TwilioAccountSid, settings.TwilioAuthToken);
 
-                var smsmessage = twilio.SendMessage(settings.TwilioFromNumber, message.Destination, message.Body);
+                var smsmessage = Twilio.Rest.Api.V2010.Account.MessageResource.Create(
+                    body: message.Body,
+                    from: new Twilio.Types.PhoneNumber(settings.TwilioFromNumber),
+                    to: new Twilio.Types.PhoneNumber(message.Destination)
+                );
                 if (smsmessage.Sid == null)
                 {
                     Task.FromResult(1);
-                    throw new Exception("Twilio did not respond with a valid message sid when sending to destination "+ message.Destination +" - no sms sent");
+                    throw new Exception("Twilio did not respond with a valid message sid when sending to destination " + message.Destination + " - no sms sent");
                 }
                 if (smsmessage.ErrorMessage != null)
                 {

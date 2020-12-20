@@ -22,10 +22,15 @@ namespace FlightJournal.Tests.ServiceProviders
                 && !string.IsNullOrWhiteSpace(settings.TwilioAuthToken)
                 && !string.IsNullOrWhiteSpace(settings.TwilioFromNumber))
             {
-
+                // based of https://www.twilio.com/docs/sms/quickstart/csharp-dotnet-framework?code-sample=code-send-an-sms-using-twilio-with-c&code-language=C%23&code-sdk-version=5.x
                 // Find your Account Sid and Auth Token at twilio.com/user/account 
-                var twilio = new TwilioRestClient(settings.TwilioAccountSid, settings.TwilioAuthToken);
-                var smsmessage = twilio.SendMessage(settings.TwilioFromNumber, "+4524250682", "Twilio Testing account setup for startlist.club");
+                TwilioClient.Init(settings.TwilioAccountSid, settings.TwilioAuthToken);
+
+                var smsmessage = Twilio.Rest.Api.V2010.Account.MessageResource.Create(
+                    body: "Twilio Testing account setup for startlist.club",
+                    from: new Twilio.Types.PhoneNumber(settings.TwilioFromNumber),
+                    to: new Twilio.Types.PhoneNumber("+4524250682")
+                );
 
                 Assert.IsNotNull(smsmessage.Sid);
                 Assert.IsNull(smsmessage.ErrorMessage);
